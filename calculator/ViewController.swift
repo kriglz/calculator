@@ -42,6 +42,15 @@ class ViewController: UIViewController {
     }
     
     
+    @IBAction func setMemory(_ sender: UIButton) {
+        display.text! = String(brain.evaluate(using: [sender.currentTitle!: displayValue]).result!)
+
+    }
+    
+    
+    
+    
+    
 //
 //using/doiong operartion
 //
@@ -59,7 +68,7 @@ class ViewController: UIViewController {
             brain.performOperation(mathematicalSymbol)
             
 //adding elipses or equal sign to the description label
-            if brain.resultIsPending {
+            if brain.evaluate().isPending {
                 descriptionDisplay.text! = brain.description + "..."
             } else {
                 if mathematicalSymbol != "AC" {
@@ -70,7 +79,7 @@ class ViewController: UIViewController {
             }
         }
 //get result
-        if let result = brain.result {
+        if let result = brain.evaluate().result {
             displayValue = result
         }
     }

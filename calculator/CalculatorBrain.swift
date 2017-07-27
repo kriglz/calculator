@@ -48,7 +48,7 @@ struct CalculatorBrain {
         "sin": Operation.unaryOperation(sin),
         "exp": Operation.unaryOperation(exp),
         "1/x": Operation.unaryOperation({ 1 / $0 }),
-//        "x^2": Operation.unaryOperation({ $0 * $0 }),
+        "ln": Operation.unaryOperation(log),
         "±": Operation.unaryOperation({ -$0}),
         "×": Operation.binaryOperation({ $0 * $1}),
         "÷": Operation.binaryOperation({ $0 / $1}),
@@ -56,13 +56,40 @@ struct CalculatorBrain {
         "-": Operation.binaryOperation({ $0 - $1}),
         "=": Operation.equals,
         "AC": Operation.clearAll,
+        "M": Operation.clearAll
     ]
 
     private var accumulation: Double?
     
     
     
-    var resultIsPending = false
+//    var resultIsPending = false
+ 
+    //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
+    func evaluate(using variables: Dictionary<String,Double>? = nil)
+        -> (result: Double?, isPending: Bool, description: String)
+    {
+
+        
+        //set result
+        let result: Double = accumulation!
+        
+        //Result is pending only during binary operation
+        if lastOperation == .binaryOperation {
+            return (result: result, isPending: true, description: description)
+        }
+        
+        return (result: result, isPending: false, description: description)
+    }
+//    //set result for ViewController
+//    var result: Double? {
+//        get {
+//            return accumulation
+//        }
+//    }
+//        
+    
+    
     
 //performOperations for ViewCOntroller
     mutating func performOperation (_ symbol: String){
@@ -113,15 +140,16 @@ struct CalculatorBrain {
                 }
                 if accumulation != nil {
                     pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation!)
-                    resultIsPending = true
+   //                 resultIsPending = true
                     appendToArray(symbol)
                     lastOperation = .binaryOperation
+                    evaluate()
                 }
 
             case .equals():
                 performPendingBinaryOperation()
                 lastOperation = .equals
-                resultIsPending = false
+//                resultIsPending = false
                 
             case .clearAll():
                 clearAll()
@@ -162,25 +190,19 @@ struct CalculatorBrain {
         }
     }
 
-//set result for ViewController
-    var result: Double? {
-        get {
-            return accumulation
-        }
-    }
     
 //clearAll description array and reset all instances
     mutating private func clearAll() {
         accumulation = 0
         descriptionArray = ["0"]
         pendingBindingOperation = nil
-        resultIsPending = false
+//        resultIsPending = false
         lastOperation = .clearAll
     }
 
 //append to array new elements
     mutating private func appendToArray(_ element: String) {
-        if lastOperation == .clearAll && resultIsPending == false {
+        if lastOperation == .clearAll && evaluate().isPending == false {
             descriptionArray.removeAll()
         }
         descriptionArray.append(element)
