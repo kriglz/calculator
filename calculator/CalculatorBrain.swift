@@ -8,6 +8,12 @@
 
 import Foundation
 
+struct CalculatorMemory {
+    var storage: Dictionary<String, Double> = [:]
+
+}
+
+
 struct CalculatorBrain {
 
 //Description string made out of description array
@@ -37,7 +43,7 @@ struct CalculatorBrain {
         case binaryOperation
         case equals
         case clearAll
-        case setOperand
+        case setOperand
     }
     
     private var operations: Dictionary<String, Operation> = [
@@ -56,39 +62,54 @@ struct CalculatorBrain {
         "-": Operation.binaryOperation({ $0 - $1}),
         "=": Operation.equals,
         "AC": Operation.clearAll,
-        "M": Operation.clearAll
     ]
 
     private var accumulation: Double?
-    
-    
-    
-//    var resultIsPending = false
+    private var variable: String?
  
     //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
     func evaluate(using variables: Dictionary<String,Double>? = nil)
         -> (result: Double?, isPending: Bool, description: String)
     {
-
         
-        //set result
-        let result: Double = accumulation!
+        var evaluateResult: Double?
+ 
+        print(variables ?? "not set")
+        if let dictionaryVariables = variables {
+            for k in dictionaryVariables.keys {
+                evaluateResult = dictionaryVariables[k]
+            }
+        } else {
+            evaluateResult = accumulation!
+
+        }
         
         //Result is pending only during binary operation
         if lastOperation == .binaryOperation {
-            return (result: result, isPending: true, description: description)
+            return (result: accumulation!, isPending: true, description: description)
         }
         
-        return (result: result, isPending: false, description: description)
+        return (result: evaluateResult, isPending: false, description: description)
     }
-//    //set result for ViewController
-//    var result: Double? {
-//        get {
-//            return accumulation
-//        }
-//    }
-//        
+    //set operand for ViewController
+    mutating func setOperand (_ operand: Double){
+        if lastOperation == .constant || lastOperation == .equals || lastOperation == .unaryOperation {
+            descriptionArray = []
+        }
+        accumulation = nil
+        accumulation = operand
+        if accumulation != nil {
+            appendToArray(String(accumulation!))
+        }
+        lastOperation = .setOperand
+    }
     
+
+    mutating func setOperand (variable named: String){
+//        variable = "M"
+        appendToArray(named)
+        lastOperation = .setOperand
+    }
     
     
 //performOperations for ViewCOntroller
@@ -140,16 +161,13 @@ struct CalculatorBrain {
                 }
                 if accumulation != nil {
                     pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation!)
-   //                 resultIsPending = true
                     appendToArray(symbol)
                     lastOperation = .binaryOperation
-                    evaluate()
                 }
 
             case .equals():
                 performPendingBinaryOperation()
                 lastOperation = .equals
-//                resultIsPending = false
                 
             case .clearAll():
                 clearAll()
@@ -158,18 +176,7 @@ struct CalculatorBrain {
         }
     }
     
-//set operand for ViewController
-    mutating func setOperand (_ operand: Double){
-        if lastOperation == .constant || lastOperation == .equals || lastOperation == .unaryOperation {
-            descriptionArray = []
-        }
-        accumulation = nil
-        accumulation = operand
-        if accumulation != nil {
-            appendToArray(String(accumulation!))
-        }
-        lastOperation = .setOperand
-    }
+
     
 //data structure for BinaryOperartion calculation
     private struct PerformBinaryOperation {
@@ -196,7 +203,7 @@ struct CalculatorBrain {
         accumulation = 0
         descriptionArray = ["0"]
         pendingBindingOperation = nil
-//        resultIsPending = false
+        _ = evaluate(using: nil)
         lastOperation = .clearAll
     }
 

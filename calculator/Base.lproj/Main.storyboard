@@ -110,7 +110,7 @@
                                                             </userDefinedRuntimeAttribute>
                                                         </userDefinedRuntimeAttributes>
                                                         <connections>
-                                                            <action selector="mathematicalSymbol:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Xj5-d0-KKv"/>
+                                                            <action selector="getMemory:" destination="BYZ-38-t0r" eventType="touchUpInside" id="o5e-Z9-GPW"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
