@@ -9,7 +9,7 @@
 import Foundation
 
 struct CalculatorMemory {
-    var storage: Dictionary<String, Double> = [:]
+    var storage: Dictionary<String, Double>?
 
 }
 
@@ -43,7 +43,8 @@ struct CalculatorBrain {
         case binaryOperation
         case equals
         case clearAll
-        case setOperand
+        case setOperand
+        case setVariableOperand
     }
     
     private var operations: Dictionary<String, Operation> = [
@@ -71,26 +72,29 @@ struct CalculatorBrain {
     func evaluate(using variables: Dictionary<String,Double>? = nil)
         -> (result: Double?, isPending: Bool, description: String)
     {
-        
         var evaluateResult: Double?
- 
-        print(variables ?? "not set")
+
         if let dictionaryVariables = variables {
             for k in dictionaryVariables.keys {
                 evaluateResult = dictionaryVariables[k]
             }
         } else {
-            evaluateResult = accumulation!
-
+            if accumulation != nil {
+                evaluateResult = accumulation!
+            } else {
+                evaluateResult = 0
+            }
         }
         
         //Result is pending only during binary operation
         if lastOperation == .binaryOperation {
-            return (result: accumulation!, isPending: true, description: description)
+            return (result: evaluateResult, isPending: true, description: description)
         }
-        
+
         return (result: evaluateResult, isPending: false, description: description)
     }
+    
+    
     //set operand for ViewController
     mutating func setOperand (_ operand: Double){
         if lastOperation == .constant || lastOperation == .equals || lastOperation == .unaryOperation {
@@ -98,7 +102,7 @@ struct CalculatorBrain {
         }
         accumulation = nil
         accumulation = operand
-        if accumulation != nil {
+        if lastOperation != .setVariableOperand {
             appendToArray(String(accumulation!))
         }
         lastOperation = .setOperand
@@ -106,9 +110,8 @@ struct CalculatorBrain {
     
 
     mutating func setOperand (variable named: String){
-//        variable = "M"
         appendToArray(named)
-        lastOperation = .setOperand
+        lastOperation = .setVariableOperand
     }
     
     
@@ -203,7 +206,7 @@ struct CalculatorBrain {
         accumulation = 0
         descriptionArray = ["0"]
         pendingBindingOperation = nil
-        _ = evaluate(using: nil)
+//        _ = evaluate(using: nil)
         lastOperation = .clearAll
     }
 

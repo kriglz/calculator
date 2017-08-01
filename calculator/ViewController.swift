@@ -24,7 +24,7 @@ class ViewController: UIViewController {
     
     @IBAction func touchDigit(_ sender: UIButton) {
         let digit = sender.currentTitle!
-        if userIsInTheMiddleOfTyping {      
+        if userIsInTheMiddleOfTyping {
             if !display.text!.contains(".") || digit != "." {
                 let textCurrentlyDisplayed = display.text!
                 display.text! = textCurrentlyDisplayed + digit
@@ -44,35 +44,31 @@ class ViewController: UIViewController {
     }
     
     private var memory = CalculatorMemory()
-
+    
     @IBAction func setMemory(_ sender: UIButton) {
         //set operand
         if userIsInTheMiddleOfTyping {
             brain.setOperand(displayValue)
             userIsInTheMiddleOfTyping = false
         }
-        memory.storage.removeAll()
-        memory.storage["M"] = displayValue
-//        print(memory.storage)
-
+//        memory.storage?.removeAll()
+        memory.storage = ["M": displayValue]
+//        print(memory.storage!)
         display.text! = String(brain.evaluate(using:memory.storage).result!)
-        print(displayValue)
-
     }
     
     @IBAction func getMemory(_ sender: UIButton) {
         brain.setOperand(variable: "M")
-        
-//        if memory.storage != nil
-//        {
-            if let result = brain.evaluate(using: memory.storage).result {
-                displayValue = result //display.text!
-                print(result)
-//            }
-            
+
+        if memory.storage != nil {
+            displayValue = brain.evaluate(using: memory.storage).result!
+            brain.setOperand(displayValue)
+
         } else {
             displayValue = brain.evaluate(using: ["M": 0]).result!
+            brain.setOperand(displayValue)
         }
+
     }
     
     
@@ -84,17 +80,17 @@ class ViewController: UIViewController {
     
     private var brain = CalculatorBrain()
     @IBAction func mathematicalSymbol(_ sender: UIButton) {
-//set operand
+        //set operand
         if userIsInTheMiddleOfTyping {
             brain.setOperand(displayValue)
             userIsInTheMiddleOfTyping = false
         }
         
-//perform operation
+        //perform operation
         if let mathematicalSymbol = sender.currentTitle {
             brain.performOperation(mathematicalSymbol)
             
-//adding elipses or equal sign to the description label
+            //adding elipses or equal sign to the description label
             if brain.evaluate().isPending {
                 descriptionDisplay.text! = brain.evaluate().description + "..."
             } else {
@@ -102,11 +98,11 @@ class ViewController: UIViewController {
                     descriptionDisplay.text! = brain.evaluate().description + "="
                 } else {
                     descriptionDisplay.text! = brain.evaluate().description
-                    memory.storage.removeAll()
+                    memory.storage?.removeAll()
                 }
             }
         }
-//get result
+        //get result
         if let result = brain.evaluate().result {
             displayValue = result
         }
