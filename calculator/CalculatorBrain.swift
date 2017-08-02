@@ -53,7 +53,7 @@ struct CalculatorBrain {
         "cos": Operation.unaryOperation(cos),
         "sin": Operation.unaryOperation(sin),
         "exp": Operation.unaryOperation(exp),
-        "1/x": Operation.unaryOperation({ 1 / $0 }),
+        "x⁻¹": Operation.unaryOperation({ 1 / $0 }),
         "ln": Operation.unaryOperation(log),
         "±": Operation.unaryOperation({ -$0}),
         "×": Operation.binaryOperation({ $0 * $1}),
@@ -93,6 +93,7 @@ struct CalculatorBrain {
     }
     
     
+    
     //set operand for ViewController
     mutating func setOperand (_ operand: Double){
         if lastOperation == .constant || lastOperation == .equals || lastOperation == .unaryOperation {
@@ -130,8 +131,8 @@ struct CalculatorBrain {
                 if accumulation != nil {
                     var wrapSymbol:String = ""
                     switch symbol {
-                    case "1/x":
-                        wrapSymbol = "1/"
+                    case "x⁻¹":
+                        wrapSymbol = "⁻¹"
                     case "±":
                         if accumulation! > 0 {
                             wrapSymbol = "-"
@@ -142,36 +143,38 @@ struct CalculatorBrain {
                         wrapSymbol = symbol
                     }
                     
-                    accumulation = function(accumulation ?? 0)
+                    accumulation = function(accumulation!)
                     
                     if symbol == "±" && lastOperation != .equals {
                         descriptionArray.insert(wrapSymbol, at: descriptionArray.startIndex)
                     } else {
+                        //calculating result for unaryOperation
                         if lastOperation == .unaryOperation {
                             performOperation("=")
                         }
                         unaryOperationWrapping(wrapSymbol)
                     }
                     lastOperation = .unaryOperation
+                } else {
+                    accumulation = 0
+                    accumulation = function(accumulation!)
+                    setOperand(accumulation!)
                 }
-                
+            
             case .binaryOperation(let function):
                 //prevents from clicking symbols lots of times
                 if lastOperation == .binaryOperation {
                     descriptionArray.removeLast(1)
                 }
+                //perform multiple operations
                 if lastOperation == .setOperand && pendingBindingOperation != nil {
                     performPendingBinaryOperation()
-
-                    print( "performed pend bin op")
-                    
                 }
                 if accumulation != nil {
                     pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation!)
                     appendToArray(symbol)
                     lastOperation = .binaryOperation
                 }
-
 
             case .equals():
                 performPendingBinaryOperation()
@@ -184,9 +187,9 @@ struct CalculatorBrain {
         }
     }
     
-
     
-//data structure for BinaryOperartion calculation
+    
+    //data structure for BinaryOperartion calculation
     private struct PerformBinaryOperation {
         let function: (Double, Double) -> Double
         let firstOperand: Double
@@ -196,7 +199,7 @@ struct CalculatorBrain {
         }
     }
     
-//perform BinaryOperation
+    //perform BinaryOperation
     private var pendingBindingOperation: PerformBinaryOperation?
     private mutating func performPendingBinaryOperation() {
         if pendingBindingOperation != nil && accumulation != nil {
@@ -204,17 +207,17 @@ struct CalculatorBrain {
             pendingBindingOperation = nil
         }
     }
-
     
-//clearAll description array and reset all instances
+    
+    //clearAll description array and reset all instances
     mutating private func clearAll() {
         accumulation = 0
         descriptionArray = ["0"]
         pendingBindingOperation = nil
         lastOperation = .clearAll
     }
-
-//append to array new elements
+    
+    //append to array new elements
     mutating private func appendToArray(_ element: String) {
         if lastOperation == .clearAll && evaluate().isPending == false {
             descriptionArray.removeAll()
@@ -222,13 +225,25 @@ struct CalculatorBrain {
         descriptionArray.append(element)
     }
     
-//wraping before unitaryOperation
+    //wraping before unitaryOperation
     mutating private func unaryOperationWrapping(_ wrapSymbol: String) {
         if lastOperation == .equals {
-            descriptionArray.insert(wrapSymbol + "(", at: descriptionArray.startIndex)
-        } else {
-            descriptionArray.insert(wrapSymbol + "(", at: descriptionArray.index(before: descriptionArray.endIndex))
+            if wrapSymbol == "⁻¹" {
+                descriptionArray.insert("(", at: descriptionArray.startIndex)
+                descriptionArray.append(")" + "⁻¹")
+            } else {
+                descriptionArray.insert(wrapSymbol + "(", at: descriptionArray.startIndex)
+                descriptionArray.append(")")
+            }
         }
-        descriptionArray.append(")")
+        else {
+            if wrapSymbol == "⁻¹" {
+                descriptionArray.insert("(", at: descriptionArray.index(before: descriptionArray.endIndex))
+                descriptionArray.append(")" + "⁻¹")
+            } else {
+                descriptionArray.insert(wrapSymbol + "(", at: descriptionArray.index(before: descriptionArray.endIndex))
+                descriptionArray.append(")")
+            }
+        }
     }
 }
