@@ -8,13 +8,10 @@
 
 import UIKit
 
-
-
 class ViewController: UIViewController {
 
     @IBOutlet weak var display: UILabel!
     @IBOutlet weak var descriptionDisplay: UILabel!
-    
     var userIsInTheMiddleOfTyping = false
 
     
@@ -53,7 +50,6 @@ class ViewController: UIViewController {
         }
 //        memory.storage?.removeAll()
         memory.storage = ["M": displayValue]
-//        print(memory.storage!)
         display.text! = String(brain.evaluate(using:memory.storage).result!)
     }
     
@@ -68,7 +64,6 @@ class ViewController: UIViewController {
             displayValue = brain.evaluate(using: ["M": 0]).result!
             brain.setOperand(displayValue)
         }
-
     }
     
     

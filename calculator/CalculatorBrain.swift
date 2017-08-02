@@ -10,12 +10,11 @@ import Foundation
 
 struct CalculatorMemory {
     var storage: Dictionary<String, Double>?
-
 }
 
 
 struct CalculatorBrain {
-
+    
 //Description string made out of description array
     var description: String {
         get {
@@ -66,7 +65,6 @@ struct CalculatorBrain {
     ]
 
     private var accumulation: Double?
-    private var variable: String?
  
     //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
     func evaluate(using variables: Dictionary<String,Double>? = nil)
@@ -102,7 +100,7 @@ struct CalculatorBrain {
         }
         accumulation = nil
         accumulation = operand
-        if lastOperation != .setVariableOperand {
+        if lastOperation != .setVariableOperand {
             appendToArray(String(accumulation!))
         }
         lastOperation = .setOperand
@@ -130,7 +128,6 @@ struct CalculatorBrain {
                 
             case .unaryOperation (let function):
                 if accumulation != nil {
-                    
                     var wrapSymbol:String = ""
                     switch symbol {
                     case "1/x":
@@ -159,14 +156,22 @@ struct CalculatorBrain {
                 }
                 
             case .binaryOperation(let function):
+                //prevents from clicking symbols lots of times
                 if lastOperation == .binaryOperation {
                     descriptionArray.removeLast(1)
+                }
+                if lastOperation == .setOperand && pendingBindingOperation != nil {
+                    performPendingBinaryOperation()
+
+                    print( "performed pend bin op")
+                    
                 }
                 if accumulation != nil {
                     pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation!)
                     appendToArray(symbol)
                     lastOperation = .binaryOperation
                 }
+
 
             case .equals():
                 performPendingBinaryOperation()
@@ -206,7 +211,6 @@ struct CalculatorBrain {
         accumulation = 0
         descriptionArray = ["0"]
         pendingBindingOperation = nil
-//        _ = evaluate(using: nil)
         lastOperation = .clearAll
     }
 
