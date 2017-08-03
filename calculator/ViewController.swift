@@ -12,8 +12,10 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var display: UILabel!
     @IBOutlet weak var descriptionDisplay: UILabel!
+    @IBOutlet weak var memoryDisplay: UILabel!
     var userIsInTheMiddleOfTyping = false
 
+    
     
 //
 //typing numbers
@@ -51,6 +53,7 @@ class ViewController: UIViewController {
 //        memory.storage?.removeAll()
         memory.storage = ["M": displayValue]
         display.text! = String(brain.evaluate(using:memory.storage).result!)
+        memoryDisplay.text! = "M → " + display.text!
     }
     
     @IBAction func getMemory(_ sender: UIButton) {
@@ -94,6 +97,7 @@ class ViewController: UIViewController {
                 } else {
                     descriptionDisplay.text! = brain.evaluate().description
                     memory.storage?.removeAll()
+                    memoryDisplay.text! = " "
                 }
             }
         }

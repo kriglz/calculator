@@ -114,11 +114,11 @@ struct CalculatorBrain {
     }
     
     
-//performOperations for ViewCOntroller
+    //performOperations for ViewCOntroller
     mutating func performOperation (_ symbol: String){
         if let operation = operations[symbol]{
             switch operation {
-            
+                
             case .constant(let value):
                 if lastOperation != .binaryOperation {
                     clearAll()
@@ -128,39 +128,13 @@ struct CalculatorBrain {
                 lastOperation = .constant
                 
             case .unaryOperation (let function):
-                if accumulation != nil {
-                    var wrapSymbol:String = ""
-                    switch symbol {
-                    case "x⁻¹":
-                        wrapSymbol = "⁻¹"
-                    case "±":
-                        if accumulation! > 0 {
-                            wrapSymbol = "-"
-                        } else {
-                            wrapSymbol = ""
-                        }
-                    default:
-                        wrapSymbol = symbol
-                    }
-                    
-                    accumulation = function(accumulation!)
-                    
-                    if symbol == "±" && lastOperation != .equals {
-                        descriptionArray.insert(wrapSymbol, at: descriptionArray.startIndex)
-                    } else {
-                        //calculating result for unaryOperation
-                        if lastOperation == .unaryOperation {
-                            performOperation("=")
-                        }
-                        unaryOperationWrapping(wrapSymbol)
-                    }
-                    lastOperation = .unaryOperation
-                } else {
-                    accumulation = 0
-                    accumulation = function(accumulation!)
-                    setOperand(accumulation!)
+                if accumulation == nil {
+                    setOperand(0)
                 }
-            
+                unaryOperationWrapping(symbol)
+                accumulation = function(accumulation!)
+                lastOperation = .unaryOperation
+                
             case .binaryOperation(let function):
                 //prevents from clicking symbols lots of times
                 if lastOperation == .binaryOperation {
@@ -170,12 +144,10 @@ struct CalculatorBrain {
                 if lastOperation == .setOperand && pendingBindingOperation != nil {
                     performPendingBinaryOperation()
                 }
-                if accumulation != nil {
-                    pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation!)
-                    appendToArray(symbol)
-                    lastOperation = .binaryOperation
-                }
-
+                pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation ?? 0)
+                appendToArray(symbol)
+                lastOperation = .binaryOperation
+                
             case .equals():
                 performPendingBinaryOperation()
                 lastOperation = .equals
@@ -184,6 +156,7 @@ struct CalculatorBrain {
                 clearAll()
                 lastOperation = .clearAll
             }
+            
         }
     }
     
@@ -224,24 +197,69 @@ struct CalculatorBrain {
         }
         descriptionArray.append(element)
     }
-    
+    private var wasMinus = false
+
     //wraping before unitaryOperation
     mutating private func unaryOperationWrapping(_ wrapSymbol: String) {
-        if lastOperation == .equals {
-            if wrapSymbol == "⁻¹" {
+        var symbol = ""
+        switch wrapSymbol {
+        case "±":
+            if accumulation! > 0 {
+                symbol = "-"
+                if lastOperation == .unaryOperation {
+                    performOperation("=")
+                }
+                if lastOperation == .equals {
+                    descriptionArray.insert(symbol + "(", at: descriptionArray.startIndex)
+                    descriptionArray.append(")")
+                    wasMinus = true
+                }
+                else {
+                    descriptionArray.insert(symbol, at: descriptionArray.index(before: descriptionArray.endIndex))
+                }
+            } else {
+                if accumulation! < 0 {
+                    if wasMinus && lastOperation == .unaryOperation {
+                        descriptionArray.removeFirst()
+                        descriptionArray.removeLast()
+                        wasMinus = false
+                    } else {
+                        if lastOperation == .unaryOperation {
+                            descriptionArray.remove(at: descriptionArray.startIndex)
+                        }
+                        if lastOperation == .equals {
+                            descriptionArray.insert("-" + "(", at: descriptionArray.startIndex)
+                            descriptionArray.append(")")
+                        }
+                    
+                    }
+                }
+            }
+        
+        case "x⁻¹":
+            symbol = "⁻¹"
+            if lastOperation == .unaryOperation {
+                performOperation("=")
+            }
+            if lastOperation == .equals {
                 descriptionArray.insert("(", at: descriptionArray.startIndex)
                 descriptionArray.append(")" + "⁻¹")
             } else {
-                descriptionArray.insert(wrapSymbol + "(", at: descriptionArray.startIndex)
-                descriptionArray.append(")")
-            }
-        }
-        else {
-            if wrapSymbol == "⁻¹" {
                 descriptionArray.insert("(", at: descriptionArray.index(before: descriptionArray.endIndex))
                 descriptionArray.append(")" + "⁻¹")
-            } else {
-                descriptionArray.insert(wrapSymbol + "(", at: descriptionArray.index(before: descriptionArray.endIndex))
+            }
+        
+        default:
+            symbol = wrapSymbol
+            if lastOperation == .unaryOperation {
+                performOperation("=")
+            }
+            if lastOperation == .equals {
+                descriptionArray.insert(symbol + "(", at: descriptionArray.startIndex)
+                descriptionArray.append(")")
+            }
+            else {
+                descriptionArray.insert(symbol + "(", at: descriptionArray.index(before: descriptionArray.endIndex))
                 descriptionArray.append(")")
             }
         }
