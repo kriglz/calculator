@@ -74,7 +74,13 @@ struct CalculatorBrain {
 
         if let dictionaryVariables = variables {
             for k in dictionaryVariables.keys {
-                evaluateResult = dictionaryVariables[k]
+                switch k {
+                case "M":
+                    evaluateResult = variables!["M"]
+                    break
+                default:
+                    evaluateResult = 0
+                }
             }
         } else {
             if accumulation != nil {
@@ -83,6 +89,19 @@ struct CalculatorBrain {
                 evaluateResult = 0
             }
         }
+        
+        
+//        if let dictionaryVariables = variables {
+//            for k in dictionaryVariables.keys {
+//                evaluateResult = dictionaryVariables[k]
+//            }
+//        } else {
+//            if accumulation != nil {
+//                evaluateResult = accumulation!
+//            } else {
+//                evaluateResult = 0
+//            }
+//        }
         
         //Result is pending only during binary operation
         if lastOperation == .binaryOperation {

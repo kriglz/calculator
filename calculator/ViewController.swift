@@ -13,6 +13,14 @@ class ViewController: UIViewController {
     @IBOutlet weak var display: UILabel!
     @IBOutlet weak var descriptionDisplay: UILabel!
     @IBOutlet weak var memoryDisplay: UILabel!
+    @IBAction func undoButton(_ sender: UIButton) {
+        if display.text != nil && userIsInTheMiddleOfTyping {
+            display.text!.characters.removeLast()
+            descriptionDisplay.text = " "
+        } else {
+            
+        }
+    }
     var userIsInTheMiddleOfTyping = false
 
     
@@ -50,10 +58,9 @@ class ViewController: UIViewController {
             brain.setOperand(displayValue)
             userIsInTheMiddleOfTyping = false
         }
-//        memory.storage?.removeAll()
         memory.storage = ["M": displayValue]
+        memoryDisplay.text! = "M → " + String(displayValue)
         display.text! = String(brain.evaluate(using:memory.storage).result!)
-        memoryDisplay.text! = "M → " + display.text!
     }
     
     @IBAction func getMemory(_ sender: UIButton) {
@@ -96,7 +103,7 @@ class ViewController: UIViewController {
                     descriptionDisplay.text! = brain.evaluate().description + "="
                 } else {
                     descriptionDisplay.text! = brain.evaluate().description
-                    memory.storage?.removeAll()
+                    memory.storage = nil
                     memoryDisplay.text! = " "
                 }
             }
