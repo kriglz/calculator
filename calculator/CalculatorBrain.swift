@@ -19,13 +19,26 @@ struct CalculatorBrain {
     var description: String {
         get {
             var entireString = ""
+            
+//            if lastOperation == .equals {
+//                let n = descriptionArray.count - 2
+//                for i in 0...n {
+//                    entireString.append(descriptionArray[i])
+//                }
+//            } else {
+//                for element in descriptionArray {
+//                    entireString.append(element)
+//                }
+//            }
             for element in descriptionArray {
                 entireString.append(element)
             }
             return entireString
         }
     }
-    private var descriptionArray:[String] = []
+    
+    private var descriptionArray: [String] = []
+    private var result: Double?
     
     private enum Operation{
         case constant(Double)
@@ -66,12 +79,13 @@ struct CalculatorBrain {
 
     private var accumulation: Double?
  
+    
+    
     //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
     func evaluate(using variables: Dictionary<String,Double>? = nil)
         -> (result: Double?, isPending: Bool, description: String)
     {
         var evaluateResult: Double?
-
         if let dictionaryVariables = variables {
             for k in dictionaryVariables.keys {
                 switch k {
@@ -83,26 +97,9 @@ struct CalculatorBrain {
                 }
             }
         } else {
-            if accumulation != nil {
-                evaluateResult = accumulation!
-            } else {
-                evaluateResult = 0
-            }
+            evaluateResult = result
         }
-        
-        
-//        if let dictionaryVariables = variables {
-//            for k in dictionaryVariables.keys {
-//                evaluateResult = dictionaryVariables[k]
-//            }
-//        } else {
-//            if accumulation != nil {
-//                evaluateResult = accumulation!
-//            } else {
-//                evaluateResult = 0
-//            }
-//        }
-        
+
         //Result is pending only during binary operation
         if lastOperation == .binaryOperation {
             return (result: evaluateResult, isPending: true, description: description)
@@ -118,11 +115,10 @@ struct CalculatorBrain {
         if lastOperation == .constant || lastOperation == .equals || lastOperation == .unaryOperation {
             descriptionArray = []
         }
-        accumulation = nil
-        accumulation = operand
         if lastOperation != .setVariableOperand {
-            appendToArray(String(accumulation!))
+            appendToArray(String(operand))
         }
+        result = operand
         lastOperation = .setOperand
     }
     
@@ -135,6 +131,7 @@ struct CalculatorBrain {
     
     //performOperations for ViewCOntroller
     mutating func performOperation (_ symbol: String){
+        
         if let operation = operations[symbol]{
             switch operation {
                 
@@ -142,16 +139,19 @@ struct CalculatorBrain {
                 if lastOperation != .binaryOperation {
                     clearAll()
                 }
-                accumulation = value
                 appendToArray(symbol)
                 lastOperation = .constant
                 
             case .unaryOperation (let function):
-                if accumulation == nil {
+                if descriptionArray.isEmpty {
                     setOperand(0)
                 }
-                unaryOperationWrapping(symbol)
-                accumulation = function(accumulation!)
+//                unaryOperationWrapping(symbol)
+//                result = function(Double(descriptionArray[descriptionArray.index(before: descriptionArray.endIndex)])!)
+
+                result = function(result!)
+                descriptionArray.append(symbol)
+
                 lastOperation = .unaryOperation
                 
             case .binaryOperation(let function):
@@ -160,22 +160,24 @@ struct CalculatorBrain {
                     descriptionArray.removeLast(1)
                 }
                 //perform multiple operations
-                if lastOperation == .setOperand && pendingBindingOperation != nil {
+                if lastOperation == .setOperand && pendingBindingOperation != nil || lastOperation == .equals {
                     performPendingBinaryOperation()
+                    pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: result ?? 0)
+                } else {
+                    pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: Double(descriptionArray[descriptionArray.index(before: descriptionArray.endIndex)]) ?? 0)
                 }
-                pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation ?? 0)
                 appendToArray(symbol)
                 lastOperation = .binaryOperation
                 
             case .equals():
                 performPendingBinaryOperation()
                 lastOperation = .equals
+
                 
             case .clearAll():
                 clearAll()
                 lastOperation = .clearAll
             }
-            
         }
     }
     
@@ -186,6 +188,7 @@ struct CalculatorBrain {
         let function: (Double, Double) -> Double
         let firstOperand: Double
         
+        
         func perform (with secondOperand: Double) -> Double {
             return function(firstOperand, secondOperand)
         }
@@ -194,18 +197,26 @@ struct CalculatorBrain {
     //perform BinaryOperation
     private var pendingBindingOperation: PerformBinaryOperation?
     private mutating func performPendingBinaryOperation() {
-        if pendingBindingOperation != nil && accumulation != nil {
-            accumulation = pendingBindingOperation!.perform(with: accumulation!)
+        if pendingBindingOperation != nil {
+//            result = pendingBindingOperation!.perform(with: Double(
+//                descriptionArray[descriptionArray.index(before: descriptionArray.endIndex)]) ?? 0)
+            result = pendingBindingOperation!.perform(with: result ?? 0)
             pendingBindingOperation = nil
         }
     }
     
+    //undo previous operation
+    mutating func undoPreviousOperation() {
+        if !descriptionArray.isEmpty {
+            descriptionArray.removeLast()
+        }
+    }
     
     //clearAll description array and reset all instances
     mutating private func clearAll() {
-        accumulation = 0
-        descriptionArray = ["0"]
+        descriptionArray = [""]
         pendingBindingOperation = nil
+        result = nil
         lastOperation = .clearAll
     }
     
@@ -223,7 +234,9 @@ struct CalculatorBrain {
         var symbol = ""
         switch wrapSymbol {
         case "±":
-            if accumulation! > 0 {
+            if Double(descriptionArray.endIndex) > 0 {
+//            if accumulation! > 0 {
+
                 symbol = "-"
                 if lastOperation == .unaryOperation {
                     performOperation("=")
@@ -237,7 +250,8 @@ struct CalculatorBrain {
                     descriptionArray.insert(symbol, at: descriptionArray.index(before: descriptionArray.endIndex))
                 }
             } else {
-                if accumulation! < 0 {
+//                if accumulation! < 0 {
+                if   Double(descriptionArray.endIndex) < 0 {
                     if wasMinus && lastOperation == .unaryOperation {
                         descriptionArray.removeFirst()
                         descriptionArray.removeLast()

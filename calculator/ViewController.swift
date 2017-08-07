@@ -14,11 +14,21 @@ class ViewController: UIViewController {
     @IBOutlet weak var descriptionDisplay: UILabel!
     @IBOutlet weak var memoryDisplay: UILabel!
     @IBAction func undoButton(_ sender: UIButton) {
-        if display.text != nil && userIsInTheMiddleOfTyping {
-            display.text!.characters.removeLast()
-            descriptionDisplay.text = " "
-        } else {
-            
+        
+        if userIsInTheMiddleOfTyping {          //undo characters
+            if !(display.text?.characters.isEmpty)! {
+                display.text!.characters.removeLast()
+                if (display.text?.characters.isEmpty)! {
+                    display.text! = "0.0"
+                    userIsInTheMiddleOfTyping = false
+                }
+            }
+            if (descriptionDisplay.text?.isEmpty)! {
+                descriptionDisplay.text = " "
+            }
+        } else {                                //undo operations
+            brain.undoPreviousOperation()
+            displayDescription()
         }
     }
     var userIsInTheMiddleOfTyping = false
@@ -49,6 +59,12 @@ class ViewController: UIViewController {
             display.text = String(newValue)
         }
     }
+
+    
+    
+//
+//setting/getting memory
+//
     
     private var memory = CalculatorMemory()
     
@@ -60,7 +76,7 @@ class ViewController: UIViewController {
         }
         memory.storage = ["M": displayValue]
         memoryDisplay.text! = "M → " + String(displayValue)
-        display.text! = String(brain.evaluate(using:memory.storage).result!)
+        display.text! = String(brain.evaluate(using: memory.storage).result!)
     }
     
     @IBAction func getMemory(_ sender: UIButton) {
@@ -69,7 +85,6 @@ class ViewController: UIViewController {
         if memory.storage != nil {
             displayValue = brain.evaluate(using: memory.storage).result!
             brain.setOperand(displayValue)
-
         } else {
             displayValue = brain.evaluate(using: ["M": 0]).result!
             brain.setOperand(displayValue)
@@ -94,23 +109,30 @@ class ViewController: UIViewController {
         //perform operation
         if let mathematicalSymbol = sender.currentTitle {
             brain.performOperation(mathematicalSymbol)
-            
-            //adding elipses or equal sign to the description label
-            if brain.evaluate().isPending {
-                descriptionDisplay.text! = brain.evaluate().description + "..."
-            } else {
-                if mathematicalSymbol != "AC" {
-                    descriptionDisplay.text! = brain.evaluate().description + "="
-                } else {
-                    descriptionDisplay.text! = brain.evaluate().description
-                    memory.storage = nil
-                    memoryDisplay.text! = " "
-                }
+            if mathematicalSymbol == "AC" {
+                memory.storage = nil
+                memoryDisplay.text! = " "
             }
+            displayDescription()
         }
+        
         //get result
         if let result = brain.evaluate().result {
             displayValue = result
+        }
+    }
+    
+    //adding elipses or equal sign to the description label
+    func displayDescription() {
+        if brain.evaluate().isPending {
+            descriptionDisplay.text! = brain.evaluate().description + "..."
+        } else {
+            if !brain.description.isEmpty {
+                descriptionDisplay.text! = brain.evaluate().description + "="
+            } else {
+                displayValue = 0
+                descriptionDisplay.text! = "0"
+            }
         }
     }
 }
