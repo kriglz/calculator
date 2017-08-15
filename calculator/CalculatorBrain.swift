@@ -19,17 +19,6 @@ struct CalculatorBrain {
     var description: String {
         get {
             var entireString = ""
-            
-//            if lastOperation == .equals {
-//                let n = descriptionArray.count - 2
-//                for i in 0...n {
-//                    entireString.append(descriptionArray[i])
-//                }
-//            } else {
-//                for element in descriptionArray {
-//                    entireString.append(element)
-//                }
-//            }
             for element in descriptionArray {
                 entireString.append(element)
             }
@@ -38,7 +27,7 @@ struct CalculatorBrain {
     }
     
     private var descriptionArray: [String] = []
-    private var result: Double?
+    private var activeNumber: Double?
     
     private enum Operation{
         case constant(Double)
@@ -97,7 +86,7 @@ struct CalculatorBrain {
                 }
             }
         } else {
-            evaluateResult = result
+            evaluateResult = activeNumber
         }
 
         //Result is pending only during binary operation
@@ -118,7 +107,7 @@ struct CalculatorBrain {
         if lastOperation != .setVariableOperand {
             appendToArray(String(operand))
         }
-        result = operand
+        activeNumber = operand
         lastOperation = .setOperand
     }
     
@@ -147,9 +136,7 @@ struct CalculatorBrain {
                     setOperand(0)
                 }
 //                unaryOperationWrapping(symbol)
-//                result = function(Double(descriptionArray[descriptionArray.index(before: descriptionArray.endIndex)])!)
-
-                result = function(result!)
+                activeNumber = function(activeNumber!)
                 descriptionArray.append(symbol)
 
                 lastOperation = .unaryOperation
@@ -162,7 +149,7 @@ struct CalculatorBrain {
                 //perform multiple operations
                 if lastOperation == .setOperand && pendingBindingOperation != nil || lastOperation == .equals {
                     performPendingBinaryOperation()
-                    pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: result ?? 0)
+                    pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: activeNumber ?? 0)
                 } else {
                     pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: Double(descriptionArray[descriptionArray.index(before: descriptionArray.endIndex)]) ?? 0)
                 }
@@ -198,9 +185,7 @@ struct CalculatorBrain {
     private var pendingBindingOperation: PerformBinaryOperation?
     private mutating func performPendingBinaryOperation() {
         if pendingBindingOperation != nil {
-//            result = pendingBindingOperation!.perform(with: Double(
-//                descriptionArray[descriptionArray.index(before: descriptionArray.endIndex)]) ?? 0)
-            result = pendingBindingOperation!.perform(with: result ?? 0)
+            activeNumber = pendingBindingOperation!.perform(with: activeNumber ?? 0)
             pendingBindingOperation = nil
         }
     }
@@ -216,7 +201,7 @@ struct CalculatorBrain {
     mutating private func clearAll() {
         descriptionArray = [""]
         pendingBindingOperation = nil
-        result = nil
+        activeNumber = nil
         lastOperation = .clearAll
     }
     
