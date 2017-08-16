@@ -14,7 +14,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var descriptionDisplay: UILabel!
     @IBOutlet weak var memoryDisplay: UILabel!
     @IBAction func undoButton(_ sender: UIButton) {
-        
         if userIsInTheMiddleOfTyping {          //undo characters
             if !(display.text?.characters.isEmpty)! {
                 display.text!.characters.removeLast()
@@ -31,9 +30,15 @@ class ViewController: UIViewController {
             displayDescription()
         }
     }
+    @IBAction func allClearButton(_ sender: Any) {
+        brain.clearAll()
+        memory.storage = nil
+        memoryDisplay.text! = " "
+        displayDescription()
+        userIsInTheMiddleOfTyping = false
+    }
     var userIsInTheMiddleOfTyping = false
 
-    
     
 //
 //typing numbers
@@ -69,11 +74,6 @@ class ViewController: UIViewController {
     private var memory = CalculatorMemory()
     
     @IBAction func setMemory(_ sender: UIButton) {
-        //set operand
-        if userIsInTheMiddleOfTyping {
-            brain.setOperand(displayValue)
-            userIsInTheMiddleOfTyping = false
-        }
         memory.storage = ["M": displayValue]
         memoryDisplay.text! = "M → " + String(displayValue)
         display.text! = String(brain.evaluate(using: memory.storage).result!)
@@ -106,15 +106,12 @@ class ViewController: UIViewController {
             userIsInTheMiddleOfTyping = false
         }
         
-        //perform operation
-        if let mathematicalSymbol = sender.currentTitle {
-            brain.performOperation(mathematicalSymbol)
-            if mathematicalSymbol == "AC" {
-                memory.storage = nil
-                memoryDisplay.text! = " "
-            }
-            displayDescription()
+        //set operation
+        if let mathematicalSymbol = sender.currentTitle, sender.currentTitle != "=" {
+            brain.setOperand(variable: mathematicalSymbol)
         }
+        
+        displayDescription()
         
         //get result
         if let result = brain.evaluate().result {

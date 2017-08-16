@@ -16,6 +16,7 @@ struct CalculatorMemory {
 struct CalculatorBrain {
     
 //Description string made out of description array
+    private var descriptionArray: [String] = []
     var description: String {
         get {
             var entireString = ""
@@ -26,7 +27,6 @@ struct CalculatorBrain {
         }
     }
     
-    private var descriptionArray: [String] = []
     private var activeNumber: Double?
     
     private enum Operation{
@@ -34,20 +34,8 @@ struct CalculatorBrain {
         case unaryOperation((Double) -> Double)
         case binaryOperation((Double, Double) -> Double)
         case equals
-        case clearAll
     }
-    
-    private var lastOperation: LastOperation = .equals
-    private enum LastOperation{
-        case constant
-        case unaryOperation
-        case binaryOperation
-        case equals
-        case clearAll
-        case setOperand
-        case setVariableOperand
-    }
-    
+
     private var operations: Dictionary<String, Operation> = [
         "π": Operation.constant(Double.pi),
         "e": Operation.constant(M_E),
@@ -63,10 +51,7 @@ struct CalculatorBrain {
         "+": Operation.binaryOperation({ $0 + $1}),
         "-": Operation.binaryOperation({ $0 - $1}),
         "=": Operation.equals,
-        "AC": Operation.clearAll,
     ]
-
-    private var accumulation: Double?
  
     
     
@@ -89,10 +74,6 @@ struct CalculatorBrain {
             evaluateResult = activeNumber
         }
 
-        //Result is pending only during binary operation
-        if lastOperation == .binaryOperation {
-            return (result: evaluateResult, isPending: true, description: description)
-        }
 
         return (result: evaluateResult, isPending: false, description: description)
     }
@@ -101,20 +82,11 @@ struct CalculatorBrain {
     
     //set operand for ViewController
     mutating func setOperand (_ operand: Double){
-        if lastOperation == .constant || lastOperation == .equals || lastOperation == .unaryOperation {
-            descriptionArray = []
-        }
-        if lastOperation != .setVariableOperand {
-            appendToArray(String(operand))
-        }
+        descriptionArray.append(String(operand))
         activeNumber = operand
-        lastOperation = .setOperand
     }
-    
-
     mutating func setOperand (variable named: String){
-        appendToArray(named)
-        lastOperation = .setVariableOperand
+        descriptionArray.append(named)
     }
     
     
@@ -125,45 +97,17 @@ struct CalculatorBrain {
             switch operation {
                 
             case .constant(let value):
-                if lastOperation != .binaryOperation {
-                    clearAll()
-                }
-                appendToArray(symbol)
-                lastOperation = .constant
+//                descriptionArray.append(symbol)
+                activeNumber = value
                 
             case .unaryOperation (let function):
-                if descriptionArray.isEmpty {
-                    setOperand(0)
-                }
-//                unaryOperationWrapping(symbol)
                 activeNumber = function(activeNumber!)
-                descriptionArray.append(symbol)
-
-                lastOperation = .unaryOperation
                 
             case .binaryOperation(let function):
-                //prevents from clicking symbols lots of times
-                if lastOperation == .binaryOperation {
-                    descriptionArray.removeLast(1)
-                }
-                //perform multiple operations
-                if lastOperation == .setOperand && pendingBindingOperation != nil || lastOperation == .equals {
-                    performPendingBinaryOperation()
-                    pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: activeNumber ?? 0)
-                } else {
-                    pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: Double(descriptionArray[descriptionArray.index(before: descriptionArray.endIndex)]) ?? 0)
-                }
-                appendToArray(symbol)
-                lastOperation = .binaryOperation
+                pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: activeNumber ?? 0)
                 
             case .equals():
                 performPendingBinaryOperation()
-                lastOperation = .equals
-
-                
-            case .clearAll():
-                clearAll()
-                lastOperation = .clearAll
             }
         }
     }
@@ -174,8 +118,6 @@ struct CalculatorBrain {
     private struct PerformBinaryOperation {
         let function: (Double, Double) -> Double
         let firstOperand: Double
-        
-        
         func perform (with secondOperand: Double) -> Double {
             return function(firstOperand, secondOperand)
         }
@@ -198,88 +140,9 @@ struct CalculatorBrain {
     }
     
     //clearAll description array and reset all instances
-    mutating private func clearAll() {
+    mutating func clearAll() {
         descriptionArray = [""]
         pendingBindingOperation = nil
         activeNumber = nil
-        lastOperation = .clearAll
-    }
-    
-    //append to array new elements
-    mutating private func appendToArray(_ element: String) {
-        if lastOperation == .clearAll && evaluate().isPending == false {
-            descriptionArray.removeAll()
-        }
-        descriptionArray.append(element)
-    }
-    private var wasMinus = false
-
-    //wraping before unitaryOperation
-    mutating private func unaryOperationWrapping(_ wrapSymbol: String) {
-        var symbol = ""
-        switch wrapSymbol {
-        case "±":
-            if Double(descriptionArray.endIndex) > 0 {
-//            if accumulation! > 0 {
-
-                symbol = "-"
-                if lastOperation == .unaryOperation {
-                    performOperation("=")
-                }
-                if lastOperation == .equals {
-                    descriptionArray.insert(symbol + "(", at: descriptionArray.startIndex)
-                    descriptionArray.append(")")
-                    wasMinus = true
-                }
-                else {
-                    descriptionArray.insert(symbol, at: descriptionArray.index(before: descriptionArray.endIndex))
-                }
-            } else {
-//                if accumulation! < 0 {
-                if   Double(descriptionArray.endIndex) < 0 {
-                    if wasMinus && lastOperation == .unaryOperation {
-                        descriptionArray.removeFirst()
-                        descriptionArray.removeLast()
-                        wasMinus = false
-                    } else {
-                        if lastOperation == .unaryOperation {
-                            descriptionArray.remove(at: descriptionArray.startIndex)
-                        }
-                        if lastOperation == .equals {
-                            descriptionArray.insert("-" + "(", at: descriptionArray.startIndex)
-                            descriptionArray.append(")")
-                        }
-                    
-                    }
-                }
-            }
-        
-        case "x⁻¹":
-            symbol = "⁻¹"
-            if lastOperation == .unaryOperation {
-                performOperation("=")
-            }
-            if lastOperation == .equals {
-                descriptionArray.insert("(", at: descriptionArray.startIndex)
-                descriptionArray.append(")" + "⁻¹")
-            } else {
-                descriptionArray.insert("(", at: descriptionArray.index(before: descriptionArray.endIndex))
-                descriptionArray.append(")" + "⁻¹")
-            }
-        
-        default:
-            symbol = wrapSymbol
-            if lastOperation == .unaryOperation {
-                performOperation("=")
-            }
-            if lastOperation == .equals {
-                descriptionArray.insert(symbol + "(", at: descriptionArray.startIndex)
-                descriptionArray.append(")")
-            }
-            else {
-                descriptionArray.insert(symbol + "(", at: descriptionArray.index(before: descriptionArray.endIndex))
-                descriptionArray.append(")")
-            }
-        }
     }
 }
