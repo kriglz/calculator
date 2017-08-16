@@ -82,10 +82,8 @@ class ViewController: UIViewController {
 
         if memory.storage != nil {
             displayValue = brain.evaluate(using: memory.storage).result!
-            brain.setOperand(displayValue)
         } else {
             displayValue = brain.evaluate(using: ["M": 0]).result!
-            brain.setOperand(displayValue)
         }
     }
     
@@ -105,17 +103,15 @@ class ViewController: UIViewController {
         }
         
         //set operation
-        if let mathematicalSymbol = sender.currentTitle, sender.currentTitle != "=" {
+        if let mathematicalSymbol = sender.currentTitle {
             brain.setOperand(variable: mathematicalSymbol)
         }
-        
-        brain.performOperation(sender.currentTitle!)
-        displayDescription()
         
         //get result
         if let result = brain.evaluate().result {
             displayValue = result
         }
+        displayDescription()
     }
     
     //adding elipses or equal sign to the description label

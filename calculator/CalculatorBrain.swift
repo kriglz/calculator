@@ -56,7 +56,7 @@ struct CalculatorBrain {
     
     
     //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
-    func evaluate(using variables: Dictionary<String,Double>? = nil)
+    mutating func evaluate(using variables: Dictionary<String,Double>? = nil)
         -> (result: Double?, isPending: Bool, description: String)
     {
         var evaluateResult: Double?
@@ -67,23 +67,33 @@ struct CalculatorBrain {
                     evaluateResult = variables!["M"]
                     break
                 default:
-                    evaluateResult = 0
+                    evaluateResult = calculateEvaluateResult()
                 }
             }
         } else {
-            evaluateResult = activeNumber
+            evaluateResult = calculateEvaluateResult()
         }
 
 
         return (result: evaluateResult, isPending: false, description: description)
     }
     
+    private mutating func calculateEvaluateResult() -> Double? {
+        for element in descriptionArray {
+            if Double(element) != nil {
+                activeNumber = Double(element)!
+            } else {
+                performOperation(element)
+            }
+        }
+        return activeNumber
+    }
     
     
     //set operand for ViewController
     mutating func setOperand (_ operand: Double){
         descriptionArray.append(String(operand))
-        activeNumber = operand
+//        activeNumber = operand
     }
     mutating func setOperand (variable named: String){
         descriptionArray.append(named)
