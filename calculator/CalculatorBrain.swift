@@ -27,7 +27,15 @@ struct CalculatorBrain {
         }
     }
     
-    private var activeNumber: Double?
+
+    //set operand for ViewController
+    mutating func setOperand (_ operand: Double){
+        descriptionArray.append(String(operand))
+    }
+    mutating func setOperand (variable named: String){
+        descriptionArray.append(named)
+    }
+    
     
     private enum Operation{
         case constant(Double)
@@ -56,7 +64,7 @@ struct CalculatorBrain {
     
     
     //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
-    mutating func evaluate(using variables: Dictionary<String,Double>? = nil)
+    func evaluate(using variables: Dictionary<String,Double>? = nil)
         -> (result: Double?, isPending: Bool, description: String)
     {
         var evaluateResult: Double?
@@ -67,79 +75,69 @@ struct CalculatorBrain {
                     evaluateResult = variables!["M"]
                     break
                 default:
-                    evaluateResult = calculateEvaluateResult()
+                    evaluateResult = performOperation()
                 }
             }
         } else {
-            evaluateResult = calculateEvaluateResult()
+            evaluateResult = performOperation()
         }
 
 
         return (result: evaluateResult, isPending: false, description: description)
     }
     
-    private mutating func calculateEvaluateResult() -> Double? {
-        for element in descriptionArray {
-            if Double(element) != nil {
-                activeNumber = Double(element)!
-            } else {
-                performOperation(element)
-            }
-        }
-        return activeNumber
-    }
-    
-    
-    //set operand for ViewController
-    mutating func setOperand (_ operand: Double){
-        descriptionArray.append(String(operand))
-//        activeNumber = operand
-    }
-    mutating func setOperand (variable named: String){
-        descriptionArray.append(named)
-    }
-    
     
     //performOperations for ViewCOntroller
-    mutating func performOperation (_ symbol: String){
+    func performOperation() -> Double? {
         
-        if let operation = operations[symbol]{
-            switch operation {
-                
-            case .constant(let value):
-                activeNumber = value
-                
-            case .unaryOperation (let function):
-                activeNumber = function(activeNumber!)
-                
-            case .binaryOperation(let function):
-                pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: activeNumber ?? 0)
-                
-            case .equals():
-                performPendingBinaryOperation()
+        var accumulation: Double?
+        
+        //data structure for BinaryOperartion calculation
+        struct PerformBinaryOperation {
+            let function: (Double, Double) -> Double
+            let firstOperand: Double
+            func perform (with secondOperand: Double) -> Double {
+                return function(firstOperand, secondOperand)
             }
         }
-    }
-    
-    
-    
-    //data structure for BinaryOperartion calculation
-    private struct PerformBinaryOperation {
-        let function: (Double, Double) -> Double
-        let firstOperand: Double
-        func perform (with secondOperand: Double) -> Double {
-            return function(firstOperand, secondOperand)
+        //perform BinaryOperation
+        var pendingBindingOperation: PerformBinaryOperation?
+        func performPendingBinaryOperation() {
+            if pendingBindingOperation != nil {
+                accumulation = pendingBindingOperation!.perform(with: accumulation ?? 0)
+                pendingBindingOperation = nil
+            }
         }
+        
+        for element in descriptionArray {
+            if Double(element) != nil {
+                accumulation = Double(element)!
+            } else {
+                
+                if let operation = operations[element]{
+                    switch operation {
+                        
+                    case .constant(let value):
+                        accumulation = value
+                        
+                    case .unaryOperation (let function):
+                        accumulation = function(accumulation ?? 0)
+                        
+                    case .binaryOperation(let function):
+                        pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation ?? 0)
+                        
+                    case .equals():
+                        performPendingBinaryOperation()
+                    }
+                }
+            }
+        }
+       
+        return accumulation
     }
     
-    //perform BinaryOperation
-    private var pendingBindingOperation: PerformBinaryOperation?
-    private mutating func performPendingBinaryOperation() {
-        if pendingBindingOperation != nil {
-            activeNumber = pendingBindingOperation!.perform(with: activeNumber ?? 0)
-            pendingBindingOperation = nil
-        }
-    }
+    
+
     
     //undo previous operation
     mutating func undoPreviousOperation() {
@@ -151,7 +149,6 @@ struct CalculatorBrain {
     //clearAll description array and reset all instances
     mutating func clearAll() {
         descriptionArray = [""]
-        pendingBindingOperation = nil
-        activeNumber = nil
+//        pendingBindingOperation = nil
     }
 }
