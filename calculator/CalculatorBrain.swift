@@ -97,7 +97,6 @@ struct CalculatorBrain {
             switch operation {
                 
             case .constant(let value):
-//                descriptionArray.append(symbol)
                 activeNumber = value
                 
             case .unaryOperation (let function):

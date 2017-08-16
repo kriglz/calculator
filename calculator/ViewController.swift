@@ -72,13 +72,11 @@ class ViewController: UIViewController {
 //
     
     private var memory = CalculatorMemory()
-    
     @IBAction func setMemory(_ sender: UIButton) {
         memory.storage = ["M": displayValue]
         memoryDisplay.text! = "M → " + String(displayValue)
         display.text! = String(brain.evaluate(using: memory.storage).result!)
     }
-    
     @IBAction func getMemory(_ sender: UIButton) {
         brain.setOperand(variable: "M")
 
@@ -111,6 +109,7 @@ class ViewController: UIViewController {
             brain.setOperand(variable: mathematicalSymbol)
         }
         
+        brain.performOperation(sender.currentTitle!)
         displayDescription()
         
         //get result
