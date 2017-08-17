@@ -41,7 +41,7 @@ struct CalculatorBrain {
         case constant(Double)
         case unaryOperation((Double) -> Double)
         case binaryOperation((Double, Double) -> Double)
-        case equals
+//        case equals
     }
 
     private var operations: Dictionary<String, Operation> = [
@@ -58,7 +58,7 @@ struct CalculatorBrain {
         "÷": Operation.binaryOperation({ $0 / $1}),
         "+": Operation.binaryOperation({ $0 + $1}),
         "-": Operation.binaryOperation({ $0 - $1}),
-        "=": Operation.equals,
+//        "=": Operation.equals,
     ]
  
     
@@ -112,6 +112,12 @@ struct CalculatorBrain {
         for element in descriptionArray {
             if Double(element) != nil {
                 accumulation = Double(element)!
+                
+                if pendingBindingOperation != nil {
+                    performPendingBinaryOperation()
+                    pendingBindingOperation = nil
+                }
+                
             } else {
                 
                 if let operation = operations[element]{
@@ -119,15 +125,16 @@ struct CalculatorBrain {
                         
                     case .constant(let value):
                         accumulation = value
-                        
+                    
                     case .unaryOperation (let function):
                         accumulation = function(accumulation ?? 0)
                         
                     case .binaryOperation(let function):
+                        if pendingBindingOperation != nil {
+                            performPendingBinaryOperation()
+                            pendingBindingOperation = nil
+                        }
                         pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation ?? 0)
-                        
-                    case .equals():
-                        performPendingBinaryOperation()
                     }
                 }
             }

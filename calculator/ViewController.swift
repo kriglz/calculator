@@ -29,6 +29,12 @@ class ViewController: UIViewController {
             brain.undoPreviousOperation()
             displayDescription()
         }
+        
+        if let result = brain.evaluate().result {
+            displayValue = result
+        }
+        displayDescription()
+        
     }
     @IBAction func allClearButton(_ sender: Any) {
         brain.clearAll()
@@ -36,6 +42,18 @@ class ViewController: UIViewController {
         memoryDisplay.text! = " "
         displayDescription()
         userIsInTheMiddleOfTyping = false
+    }
+    @IBAction func equalsButton(_ sender: UIButton) {
+        //set operand
+        if userIsInTheMiddleOfTyping {
+            brain.setOperand(displayValue)
+            userIsInTheMiddleOfTyping = false
+        }
+        //get result
+        if let result = brain.evaluate().result {
+            displayValue = result
+        }
+        displayDescription()
     }
     var userIsInTheMiddleOfTyping = false
 
