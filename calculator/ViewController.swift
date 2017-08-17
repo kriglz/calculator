@@ -15,6 +15,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var memoryDisplay: UILabel!
     @IBAction func undoButton(_ sender: UIButton) {
         if userIsInTheMiddleOfTyping {          //undo characters
+            
             if !(display.text?.characters.isEmpty)! {
                 display.text!.characters.removeLast()
                 if (display.text?.characters.isEmpty)! {
@@ -28,13 +29,12 @@ class ViewController: UIViewController {
         } else {                                //undo operations
             brain.undoPreviousOperation()
             displayDescription()
+            
+            if let result = brain.evaluate().result {
+                displayValue = result
+            }
+            displayDescription()
         }
-        
-        if let result = brain.evaluate().result {
-            displayValue = result
-        }
-        displayDescription()
-        
     }
     @IBAction func allClearButton(_ sender: Any) {
         brain.clearAll()

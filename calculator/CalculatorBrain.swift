@@ -28,20 +28,13 @@ struct CalculatorBrain {
     }
     
 
-    //set operand for ViewController
-    mutating func setOperand (_ operand: Double){
-        descriptionArray.append(String(operand))
-    }
-    mutating func setOperand (variable named: String){
-        descriptionArray.append(named)
-    }
+
     
     
     private enum Operation{
         case constant(Double)
         case unaryOperation((Double) -> Double)
         case binaryOperation((Double, Double) -> Double)
-//        case equals
     }
 
     private var operations: Dictionary<String, Operation> = [
@@ -58,10 +51,86 @@ struct CalculatorBrain {
         "÷": Operation.binaryOperation({ $0 / $1}),
         "+": Operation.binaryOperation({ $0 + $1}),
         "-": Operation.binaryOperation({ $0 - $1}),
-//        "=": Operation.equals,
     ]
  
     
+    
+    
+    //set operand for ViewController
+    mutating func setOperand (_ operand: Double){
+        
+        if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex) {
+            
+            let lastElement = descriptionArray[lastElementIndex]
+            
+            var oldOperation: String?
+            if let operation = operations[lastElement]{
+                switch operation {
+                case .constant:
+                    oldOperation = "constant"
+                case .unaryOperation:
+                    oldOperation = "unaryOperation"
+                case .binaryOperation:
+                    oldOperation = "binaryOperation"
+                }
+            }
+            if Double(lastElement) != nil || lastElement == "M" || oldOperation == "unaryOperation" || oldOperation == "constant" {
+                descriptionArray.removeAll()
+            }
+        }
+        descriptionArray.append(String(operand))
+    }
+    mutating func setOperand (variable named: String){
+        
+        if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex) {
+            let lastElement = descriptionArray[lastElementIndex]
+            
+            
+            var newOperation: String?
+            if let operation = operations[named]{
+                switch operation {
+                case .constant:
+                    newOperation = "constant"
+                case .unaryOperation:
+                    newOperation = "unaryOperation"
+                case .binaryOperation:
+                    newOperation = "binaryOperation"
+                }
+            }
+            
+            var oldOperation: String?
+            if let operation = operations[lastElement]{
+                switch operation {
+                case .constant:
+                    oldOperation = "constant"
+                case .unaryOperation:
+                    oldOperation = "unaryOperation"
+                case .binaryOperation:
+                    oldOperation = "binaryOperation"
+                }
+            }
+            
+            if newOperation == "constant" && (Double(lastElement) != nil || oldOperation == "constant" || oldOperation == "unaryOperation" || lastElement == "M") {
+                descriptionArray.removeAll()
+            }
+            
+            if newOperation == "unaryOperation" && oldOperation == "binaryOperation" {
+                descriptionArray.removeLast()
+            }
+            
+            if newOperation == "binaryOperation" && oldOperation == "binaryOperation" {
+                descriptionArray.removeLast()
+            }
+            
+        }
+
+        
+        
+        descriptionArray.append(named)
+    }
+    
+
+
     
     //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
     func evaluate(using variables: Dictionary<String,Double>? = nil)
@@ -81,8 +150,6 @@ struct CalculatorBrain {
         } else {
             evaluateResult = performOperation()
         }
-
-
         return (result: evaluateResult, isPending: false, description: description)
     }
     
@@ -108,6 +175,7 @@ struct CalculatorBrain {
                 pendingBindingOperation = nil
             }
         }
+        
         
         for element in descriptionArray {
             if Double(element) != nil {
@@ -139,7 +207,6 @@ struct CalculatorBrain {
                 }
             }
         }
-       
         return accumulation
     }
     
@@ -155,7 +222,6 @@ struct CalculatorBrain {
     
     //clearAll description array and reset all instances
     mutating func clearAll() {
-        descriptionArray = [""]
-//        pendingBindingOperation = nil
+        descriptionArray.removeAll()
     }
 }
