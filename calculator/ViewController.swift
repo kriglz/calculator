@@ -93,6 +93,7 @@ class ViewController: UIViewController {
     @IBAction func setMemory(_ sender: UIButton) {
         memory.storage = ["M": displayValue]
         memoryDisplay.text! = "M → " + String(displayValue)
+        
         display.text! = String(brain.evaluate(using: memory.storage).result!)
     }
     @IBAction func getMemory(_ sender: UIButton) {

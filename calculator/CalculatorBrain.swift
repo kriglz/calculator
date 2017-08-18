@@ -27,10 +27,6 @@ struct CalculatorBrain {
         }
     }
     
-
-
-    
-    
     private enum Operation{
         case constant(Double)
         case unaryOperation((Double) -> Double)
@@ -54,83 +50,18 @@ struct CalculatorBrain {
     ]
  
     
-    
-    
     //set operand for ViewController
     mutating func setOperand (_ operand: Double){
-        
-        if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex) {
-            
-            let lastElement = descriptionArray[lastElementIndex]
-            
-            var oldOperation: String?
-            if let operation = operations[lastElement]{
-                switch operation {
-                case .constant:
-                    oldOperation = "constant"
-                case .unaryOperation:
-                    oldOperation = "unaryOperation"
-                case .binaryOperation:
-                    oldOperation = "binaryOperation"
-                }
-            }
-            if Double(lastElement) != nil || lastElement == "M" || oldOperation == "unaryOperation" || oldOperation == "constant" {
-                descriptionArray.removeAll()
-            }
-        }
+        let valueToCheck = Value.numeric(operand)
+        compareOldElement(with: valueToCheck)
         descriptionArray.append(String(operand))
     }
     mutating func setOperand (variable named: String){
-        
-        if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex) {
-            let lastElement = descriptionArray[lastElementIndex]
-            
-            
-            var newOperation: String?
-            if let operation = operations[named]{
-                switch operation {
-                case .constant:
-                    newOperation = "constant"
-                case .unaryOperation:
-                    newOperation = "unaryOperation"
-                case .binaryOperation:
-                    newOperation = "binaryOperation"
-                }
-            }
-            
-            var oldOperation: String?
-            if let operation = operations[lastElement]{
-                switch operation {
-                case .constant:
-                    oldOperation = "constant"
-                case .unaryOperation:
-                    oldOperation = "unaryOperation"
-                case .binaryOperation:
-                    oldOperation = "binaryOperation"
-                }
-            }
-            
-            if newOperation == "constant" && (Double(lastElement) != nil || oldOperation == "constant" || oldOperation == "unaryOperation" || lastElement == "M") {
-                descriptionArray.removeAll()
-            }
-            
-            if newOperation == "unaryOperation" && oldOperation == "binaryOperation" {
-                descriptionArray.removeLast()
-            }
-            
-            if newOperation == "binaryOperation" && oldOperation == "binaryOperation" {
-                descriptionArray.removeLast()
-            }
-            
-        }
-
-        
-        
+        let valueToCheck = Value.nonNumeric(named)
+        compareOldElement(with: valueToCheck)
         descriptionArray.append(named)
     }
     
-
-
     
     //calculating CalculatorBrain result by substituting values for those variables found in a supplied Dictionary
     func evaluate(using variables: Dictionary<String,Double>? = nil)
@@ -142,20 +73,23 @@ struct CalculatorBrain {
                 switch k {
                 case "M":
                     evaluateResult = variables!["M"]
-                    break
+                    evaluateResult = performOperation(ifMemorySet: evaluateResult)
+
                 default:
-                    evaluateResult = performOperation()
+                    break
                 }
             }
-        } else {
+        }
+        else {
             evaluateResult = performOperation()
         }
+
         return (result: evaluateResult, isPending: false, description: description)
     }
     
     
     //performOperations for ViewCOntroller
-    func performOperation() -> Double? {
+    func performOperation(ifMemorySet withValue: Double? = nil) -> Double? {
         
         var accumulation: Double?
         
@@ -187,7 +121,14 @@ struct CalculatorBrain {
                 }
                 
             } else {
-                
+                if element == "M" {
+                    if let value = withValue {
+                        accumulation = value
+                    }
+                    else {
+                        accumulation = 0
+                    }
+                }
                 if let operation = operations[element]{
                     switch operation {
                         
@@ -210,7 +151,59 @@ struct CalculatorBrain {
         return accumulation
     }
     
+    enum Value {
+        case numeric(Double)
+        case nonNumeric(String)
+    }
     
+    private mutating func compareOldElement(with newOne: Value) {
+        switch newOne {
+        case .numeric:
+            if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex)
+            {
+                let lastElement = descriptionArray[lastElementIndex]
+                let oldOperation = getOperationName(of: lastElement)
+                
+                if Double(lastElement) != nil || lastElement == "M" || oldOperation == "unaryOperation" || oldOperation == "constant" {
+                    descriptionArray.removeAll()
+                }
+            }
+        case .nonNumeric(let symbol):
+            if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex) {
+                let lastElement = descriptionArray[lastElementIndex]
+                
+                let newOperation = getOperationName(of: symbol)
+                let oldOperation = getOperationName(of: lastElement)
+                
+                if newOperation == "constant" && (Double(lastElement) != nil || oldOperation == "constant" || oldOperation == "unaryOperation" || lastElement == "M") {
+                    descriptionArray.removeAll()
+                }
+                if newOperation == "unaryOperation" && oldOperation == "binaryOperation" {
+                    descriptionArray.removeLast()
+                }
+                if newOperation == "binaryOperation" && oldOperation == "binaryOperation" {
+                    descriptionArray.removeLast()
+                }
+                if symbol == "M" && lastElement == "M" {
+                    descriptionArray.removeLast()
+                }
+            }
+        }
+    }
+    
+    private func getOperationName(of operation: String) -> String {
+        if let op = operations[operation]{
+            switch op {
+            case .constant:
+                return "constant"
+            case .unaryOperation:
+                return "unaryOperation"
+            case .binaryOperation:
+                return "binaryOperation"
+            }
+        }
+        return "Can't found"
+    }
 
     
     //undo previous operation
