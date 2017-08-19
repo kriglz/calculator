@@ -31,6 +31,7 @@ struct CalculatorBrain {
         case constant(Double)
         case unaryOperation((Double) -> Double)
         case binaryOperation((Double, Double) -> Double)
+        case equals
     }
 
     private var operations: Dictionary<String, Operation> = [
@@ -47,6 +48,7 @@ struct CalculatorBrain {
         "÷": Operation.binaryOperation({ $0 / $1}),
         "+": Operation.binaryOperation({ $0 + $1}),
         "-": Operation.binaryOperation({ $0 - $1}),
+        "=": Operation.equals
     ]
  
     
@@ -73,25 +75,23 @@ struct CalculatorBrain {
                 switch k {
                 case "M":
                     evaluateResult = variables!["M"]
-                    evaluateResult = performOperation(ifMemorySet: evaluateResult)
-
                 default:
                     break
                 }
             }
         }
-        else {
-            evaluateResult = performOperation()
-        }
+        evaluateResult = performOperation(ifMemorySet: evaluateResult).result
+        let resultIsPendingResult = performOperation(ifMemorySet: evaluateResult).isPending
 
-        return (result: evaluateResult, isPending: false, description: description)
+        return (result: evaluateResult, isPending: resultIsPendingResult, description: description)
     }
     
     
     //performOperations for ViewCOntroller
-    func performOperation(ifMemorySet withValue: Double? = nil) -> Double? {
+    func performOperation(ifMemorySet withValue: Double? = nil) -> (result: Double?, isPending: Bool) {
         
         var accumulation: Double?
+        var resultIsPending = false
         
         //data structure for BinaryOperartion calculation
         struct PerformBinaryOperation {
@@ -110,7 +110,6 @@ struct CalculatorBrain {
             }
         }
         
-        
         for element in descriptionArray {
             if Double(element) != nil {
                 accumulation = Double(element)!
@@ -119,6 +118,7 @@ struct CalculatorBrain {
                     performPendingBinaryOperation()
                     pendingBindingOperation = nil
                 }
+                resultIsPending = false
                 
             } else {
                 if element == "M" {
@@ -128,15 +128,24 @@ struct CalculatorBrain {
                     else {
                         accumulation = 0
                     }
+                    if pendingBindingOperation != nil {
+                        performPendingBinaryOperation()
+                        pendingBindingOperation = nil
+                    }
+                    resultIsPending = false
                 }
                 if let operation = operations[element]{
                     switch operation {
                         
                     case .constant(let value):
                         accumulation = value
+                        if pendingBindingOperation == nil {
+                            resultIsPending = false
+                        }
                     
                     case .unaryOperation (let function):
                         accumulation = function(accumulation ?? 0)
+                        resultIsPending = false
                         
                     case .binaryOperation(let function):
                         if pendingBindingOperation != nil {
@@ -144,11 +153,19 @@ struct CalculatorBrain {
                             pendingBindingOperation = nil
                         }
                         pendingBindingOperation = PerformBinaryOperation(function: function, firstOperand: accumulation ?? 0)
+                        resultIsPending = true
+                        
+                    case .equals:
+                        if pendingBindingOperation != nil {
+                            performPendingBinaryOperation()
+                            pendingBindingOperation = nil
+                        }
+                        resultIsPending = false
                     }
                 }
             }
         }
-        return accumulation
+        return (accumulation, resultIsPending)
     }
     
     enum Value {
@@ -200,6 +217,8 @@ struct CalculatorBrain {
                 return "unaryOperation"
             case .binaryOperation:
                 return "binaryOperation"
+            case .equals:
+                return "equals"
             }
         }
         return "Can't found"

@@ -15,7 +15,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var memoryDisplay: UILabel!
     @IBAction func undoButton(_ sender: UIButton) {
         if userIsInTheMiddleOfTyping {          //undo characters
-            
             if !(display.text?.characters.isEmpty)! {
                 display.text!.characters.removeLast()
                 if (display.text?.characters.isEmpty)! {
@@ -30,7 +29,7 @@ class ViewController: UIViewController {
             brain.undoPreviousOperation()
             displayDescription()
             
-            if let result = brain.evaluate().result {
+            if let result = brain.evaluate(using: memory.storage).result {
                 displayValue = result
             }
             displayDescription()
@@ -43,18 +42,19 @@ class ViewController: UIViewController {
         displayDescription()
         userIsInTheMiddleOfTyping = false
     }
-    @IBAction func equalsButton(_ sender: UIButton) {
-        //set operand
-        if userIsInTheMiddleOfTyping {
-            brain.setOperand(displayValue)
-            userIsInTheMiddleOfTyping = false
-        }
-        //get result
-        if let result = brain.evaluate().result {
-            displayValue = result
-        }
-        displayDescription()
-    }
+//    @IBAction func equalsButton(_ sender: UIButton) {
+//        //set operand
+//        if userIsInTheMiddleOfTyping {
+//            brain.setOperand(displayValue)
+//            userIsInTheMiddleOfTyping = false
+//        }
+//        
+//        //get result
+//        if let result = brain.evaluate(using: memory.storage).result {
+//            displayValue = result
+//        }
+//        displayDescription()
+//    }
     var userIsInTheMiddleOfTyping = false
 
     
@@ -94,16 +94,14 @@ class ViewController: UIViewController {
         memory.storage = ["M": displayValue]
         memoryDisplay.text! = "M → " + String(displayValue)
         
-        display.text! = String(brain.evaluate(using: memory.storage).result!)
+        if !brain.evaluate().description.isEmpty {
+            display.text! = String(brain.evaluate(using: memory.storage).result!)
+        }
+
     }
     @IBAction func getMemory(_ sender: UIButton) {
         brain.setOperand(variable: "M")
-
-        if memory.storage != nil {
-            displayValue = brain.evaluate(using: memory.storage).result!
-        } else {
-            displayValue = brain.evaluate(using: ["M": 0]).result!
-        }
+        displayValue = memory.storage?["M"] ?? 0
     }
     
     
@@ -125,9 +123,9 @@ class ViewController: UIViewController {
         if let mathematicalSymbol = sender.currentTitle {
             brain.setOperand(variable: mathematicalSymbol)
         }
-        
+    
         //get result
-        if let result = brain.evaluate().result {
+        if let result = brain.evaluate(using: memory.storage).result {
             displayValue = result
         }
         displayDescription()
