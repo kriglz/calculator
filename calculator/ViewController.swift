@@ -93,7 +93,8 @@ class ViewController: UIViewController {
     @IBAction func setMemory(_ sender: UIButton) {
         memory.storage = ["M": displayValue]
         memoryDisplay.text! = "M → " + String(displayValue)
-        
+        userIsInTheMiddleOfTyping = false
+
         if !brain.evaluate().description.isEmpty {
             display.text! = String(brain.evaluate(using: memory.storage).result!)
         }

@@ -21,7 +21,9 @@ struct CalculatorBrain {
         get {
             var entireString = ""
             for element in descriptionArray {
-                entireString.append(element)
+                if element != "=" {
+                    entireString.append(element)
+                }
             }
             return entireString
         }
@@ -57,11 +59,14 @@ struct CalculatorBrain {
         let valueToCheck = Value.numeric(operand)
         compareOldElement(with: valueToCheck)
         descriptionArray.append(String(operand))
+        print(descriptionArray)
     }
     mutating func setOperand (variable named: String){
         let valueToCheck = Value.nonNumeric(named)
         compareOldElement(with: valueToCheck)
         descriptionArray.append(named)
+        print(descriptionArray)
+
     }
     
     
@@ -165,6 +170,7 @@ struct CalculatorBrain {
                 }
             }
         }
+
         return (accumulation, resultIsPending)
     }
     
@@ -181,7 +187,8 @@ struct CalculatorBrain {
                 let lastElement = descriptionArray[lastElementIndex]
                 let oldOperation = getOperationName(of: lastElement)
                 
-                if Double(lastElement) != nil || lastElement == "M" || oldOperation == "unaryOperation" || oldOperation == "constant" {
+                if Double(lastElement) != nil ||  oldOperation == "unaryOperation" || oldOperation == "constant" || oldOperation == "equals"{
+
                     descriptionArray.removeAll()
                 }
             }
@@ -192,6 +199,7 @@ struct CalculatorBrain {
                 let newOperation = getOperationName(of: symbol)
                 let oldOperation = getOperationName(of: lastElement)
                 
+                
                 if newOperation == "constant" && (Double(lastElement) != nil || oldOperation == "constant" || oldOperation == "unaryOperation" || lastElement == "M") {
                     descriptionArray.removeAll()
                 }
@@ -201,8 +209,24 @@ struct CalculatorBrain {
                 if newOperation == "binaryOperation" && oldOperation == "binaryOperation" {
                     descriptionArray.removeLast()
                 }
+                if newOperation == "equals" && oldOperation == "binaryOperation" {
+                    let element = String(evaluate().result!)
+                    let index = descriptionArray.endIndex
+                    descriptionArray.insert(element, at: index)
+                }
                 if symbol == "M" && lastElement == "M" {
                     descriptionArray.removeLast()
+                }
+                if newOperation == "equals" && oldOperation == "equals" {
+                    descriptionArray.removeLast()
+                }
+                if (oldOperation == "equals" || oldOperation == "unaryOperation" || oldOperation == "constant") && symbol == "M" {
+                    descriptionArray.removeAll()
+                }
+            } else {
+                let newOperation = getOperationName(of: symbol)
+                if newOperation != "constant" {
+                    descriptionArray.append("0.0")
                 }
             }
         }
@@ -227,6 +251,9 @@ struct CalculatorBrain {
     
     //undo previous operation
     mutating func undoPreviousOperation() {
+        if descriptionArray.last == "=" {
+            descriptionArray.removeLast()
+        }
         if !descriptionArray.isEmpty {
             descriptionArray.removeLast()
         }
