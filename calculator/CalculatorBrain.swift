@@ -17,17 +17,6 @@ struct CalculatorBrain {
     
 //Description string made out of description array
     private var descriptionArray: [String] = []
-    var description: String {
-        get {
-            var entireString = ""
-            for element in descriptionArray {
-                if element != "=" {
-                    entireString.append(element)
-                }
-            }
-            return entireString
-        }
-    }
     
     private enum Operation{
         case constant(Double)
@@ -119,10 +108,10 @@ struct CalculatorBrain {
             if Double(element) != nil {
                 accumulation = Double(element)!
                 
-                if pendingBindingOperation != nil {
-                    performPendingBinaryOperation()
-                    pendingBindingOperation = nil
-                }
+//                if pendingBindingOperation != nil {
+//                    performPendingBinaryOperation()
+//                    pendingBindingOperation = nil
+//                }
                 resultIsPending = false
                 
             } else {
@@ -150,7 +139,11 @@ struct CalculatorBrain {
                     
                     case .unaryOperation (let function):
                         accumulation = function(accumulation ?? 0)
-                        resultIsPending = false
+                        if pendingBindingOperation != nil {
+                            resultIsPending = true
+                        } else {
+                            resultIsPending = false
+                        }
                         
                     case .binaryOperation(let function):
                         if pendingBindingOperation != nil {
@@ -263,4 +256,83 @@ struct CalculatorBrain {
     mutating func clearAll() {
         descriptionArray.removeAll()
     }
+    
+    var description: String {
+        get {
+            var displayArray = [String]()
+            var elemenNumber = 0
+            var repetetiveNumber = 1
+            var beforeTheLastWasEqual = false
+            var lastOperationName = ""
+            var newOperationName = ""
+            
+            
+            for element in descriptionArray {
+                if Double(element) != nil {                 //element is a number
+                    displayArray.append(element)
+                    elemenNumber += 1
+                    
+                } else {                                    //element is not a number
+                    newOperationName = getOperationName(of: element)
+                    switch element {
+                    
+                    case "=":
+                        break
+                        
+                    case "x⁻¹":
+                        if lastOperationName == "equals" || beforeTheLastWasEqual{
+                            displayArray.insert("(", at: displayArray.startIndex)
+                            displayArray.append(")" + "⁻¹")
+                            beforeTheLastWasEqual = true
+                        } else {
+                            if lastOperationName == "unaryOperation" {
+                                displayArray.insert("(", at: displayArray.index(before: displayArray.endIndex - repetetiveNumber))
+                                repetetiveNumber += 1
+                            } else {
+                                displayArray.insert("(", at: displayArray.index(before: displayArray.endIndex))
+                            }
+                            displayArray.append(")" + "⁻¹")
+                        }
+                        elemenNumber += 2
+                        
+                        
+                    default:
+                        if newOperationName == "binaryOperation" || newOperationName == "constant" {
+                            displayArray.append(element)
+                        } else {
+                            if lastOperationName == "equals" || beforeTheLastWasEqual{
+                                displayArray.insert(element + "(", at: displayArray.startIndex)
+                                displayArray.append(")")
+                                beforeTheLastWasEqual = true
+                            } else {
+                                if lastOperationName == "unaryOperation" {
+                                    displayArray.insert(element + "(", at: displayArray.index(before: displayArray.endIndex - repetetiveNumber))
+                                    repetetiveNumber += 1
+                                } else {
+                                    displayArray.insert(element + "(", at: displayArray.index(before: displayArray.endIndex))
+                                }
+                                displayArray.append(")")
+                            }
+                            elemenNumber += 2
+                        }
+                    }
+                    lastOperationName = newOperationName
+                    
+                }
+                
+                print(displayArray)
+                print(descriptionArray)
+            }
+            
+            
+            var entireString = ""
+            for element in displayArray {
+                if element != "=" {
+                    entireString.append(element)
+                }
+            }
+            return entireString
+        }
+    }
+
 }

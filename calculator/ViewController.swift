@@ -42,19 +42,7 @@ class ViewController: UIViewController {
         displayDescription()
         userIsInTheMiddleOfTyping = false
     }
-//    @IBAction func equalsButton(_ sender: UIButton) {
-//        //set operand
-//        if userIsInTheMiddleOfTyping {
-//            brain.setOperand(displayValue)
-//            userIsInTheMiddleOfTyping = false
-//        }
-//        
-//        //get result
-//        if let result = brain.evaluate(using: memory.storage).result {
-//            displayValue = result
-//        }
-//        displayDescription()
-//    }
+
     var userIsInTheMiddleOfTyping = false
 
     
