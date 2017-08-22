@@ -42,6 +42,13 @@ class ViewController: UIViewController {
         displayDescription()
         userIsInTheMiddleOfTyping = false
     }
+    @IBAction func randomGenerationButton(_ sender: UIButton) {
+        let maxNumber = Double(UInt32.max)
+        let randomNumber = Double(arc4random())
+        displayValue = randomNumber/maxNumber
+        userIsInTheMiddleOfTyping = true
+
+    }
 
     var userIsInTheMiddleOfTyping = false
 

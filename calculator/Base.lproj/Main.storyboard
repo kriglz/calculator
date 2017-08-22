@@ -54,7 +54,7 @@
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sdu-ey-IvX">
                                                         <rect key="frame" x="0.0" y="0.0" width="143.5" height="48"/>
-                                                        <color key="backgroundColor" white="0.88374766376283431" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <color key="backgroundColor" red="0.89107831319173181" green="0.8917564815945096" blue="0.90662193298339844" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="29"/>
                                                         <state key="normal" title="AC">
                                                             <color key="titleColor" red="0.28954825129533679" green="0.28954825129533679" blue="0.28954825129533679" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
@@ -69,10 +69,32 @@
                                                             <action selector="allClearButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ppx-3S-Ioq"/>
                                                         </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="d3X-Ze-Dh6">
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="d3M-3Y-Mm4">
                                                         <rect key="frame" x="144.5" y="0.0" width="143.5" height="48"/>
-                                                        <color key="backgroundColor" red="0.5432389379" green="0.80445665119999998" blue="0.88700628280000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                                        <color key="backgroundColor" red="0.55461894803576994" green="0.78283617893854773" blue="0.85694642199410331" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                                        <state key="normal" title="undo">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                            <color key="titleShadowColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                        </state>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                <integer key="value" value="5"/>
+                                                            </userDefinedRuntimeAttribute>
+                                                        </userDefinedRuntimeAttributes>
+                                                        <connections>
+                                                            <action selector="undoButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5lD-YD-N9T"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="xhf-3x-osm">
+                                                <rect key="frame" x="0.0" y="49" width="288" height="48"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="d3X-Ze-Dh6">
+                                                        <rect key="frame" x="0.0" y="0.0" width="71.5" height="48"/>
+                                                        <color key="backgroundColor" red="0.78321807797118526" green="0.85382831426539796" blue="0.94941703680203049" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                                         <state key="normal" title="rand">
                                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                             <color key="titleShadowColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -83,29 +105,7 @@
                                                             </userDefinedRuntimeAttribute>
                                                         </userDefinedRuntimeAttributes>
                                                         <connections>
-                                                            <action selector="setMemory:" destination="BYZ-38-t0r" eventType="touchUpInside" id="LEl-qB-Z5c"/>
-                                                        </connections>
-                                                    </button>
-                                                </subviews>
-                                            </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="xhf-3x-osm">
-                                                <rect key="frame" x="0.0" y="49" width="288" height="48"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="d3M-3Y-Mm4">
-                                                        <rect key="frame" x="0.0" y="0.0" width="71.5" height="48"/>
-                                                        <color key="backgroundColor" white="0.88374766380000003" alpha="1" colorSpace="calibratedWhite"/>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                        <state key="normal" title="undo">
-                                                            <color key="titleColor" red="0.2895482513" green="0.2895482513" blue="0.2895482513" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                                            <color key="titleShadowColor" cocoaTouchSystemColor="darkTextColor"/>
-                                                        </state>
-                                                        <userDefinedRuntimeAttributes>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                                                <integer key="value" value="5"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                        </userDefinedRuntimeAttributes>
-                                                        <connections>
-                                                            <action selector="undoButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5lD-YD-N9T"/>
+                                                            <action selector="randomGenerationButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Qs6-6e-986"/>
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QGZ-xM-oh0">
@@ -127,7 +127,7 @@
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VqK-hM-uyl">
                                                         <rect key="frame" x="144.5" y="0.0" width="71.5" height="48"/>
-                                                        <color key="backgroundColor" red="0.54323893785476685" green="0.80445665121078491" blue="0.88700628280639648" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="backgroundColor" red="0.60546767049365569" green="0.85268798801634049" blue="0.91120333141750764" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="23"/>
                                                         <state key="normal" title="→M">
                                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -144,7 +144,7 @@
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xLE-LP-sIK">
                                                         <rect key="frame" x="217" y="0.0" width="71" height="48"/>
-                                                        <color key="backgroundColor" red="0.54323893785476685" green="0.80445665121078491" blue="0.88700628280639648" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="backgroundColor" red="0.64550673299365569" green="0.80445665121078491" blue="0.88700628280639648" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="22"/>
                                                         <state key="normal" title="M">
                                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
