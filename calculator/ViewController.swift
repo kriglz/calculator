@@ -83,7 +83,7 @@ class ViewController: UIViewController {
         memoryDisplay.text! = "M → " + String(displayValue)
         userIsInTheMiddleOfTyping = false
 
-        if !brain.evaluate().description.isEmpty {
+        if !brain.description.isEmpty {
             display.text! = String(brain.evaluate(using: memory.storage).result!)
         }
 
@@ -123,10 +123,10 @@ class ViewController: UIViewController {
     //adding elipses or equal sign to the description label
     func displayDescription() {
         if brain.evaluate().isPending {
-            descriptionDisplay.text! = brain.evaluate().description + "..."
+            descriptionDisplay.text! = brain.description + "..."
         } else {
             if !brain.description.isEmpty {
-                descriptionDisplay.text! = brain.evaluate().description + "="
+                descriptionDisplay.text! = brain.description + "="
             } else {
                 displayValue = 0
                 descriptionDisplay.text! = "0"
