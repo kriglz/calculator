@@ -176,6 +176,12 @@ struct CalculatorBrain {
     private mutating func compareOldElement(with newOne: Value) {
         switch newOne {
         case .numeric:
+            /*
+             TYPE NUMBER:
+             1. if the last element in the array is a number -> delete array, start new one.
+             2. if the last element is .constant -> delete array, start new one.
+             3. if the last element is M -> delete array, start new one.
+             */
             if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex)
             {
                 let lastElement = descriptionArray[lastElementIndex]
@@ -186,7 +192,24 @@ struct CalculatorBrain {
                     descriptionArray.removeAll()
                 }
             }
+
         case .nonNumeric(let symbol):
+            /*
+             TYPE M:
+             1. if the last element is M -> delete array last member, start new one.
+             2. if the last element in the array is a number -> delete array, start new one.
+             3. if the last element is .constant -> delete array, start new one.
+             
+             TYPE .CONSTANT:
+             1. if the last element in the array is a number -> delete array, start new one.
+             2. if the last element is .constant -> delete array, start new one.
+             3. if the last element is M -> delete array, start new one.
+             
+             TYPE .UNARYOPERATION:
+             1. if the last element in the array is a symbol -> do nothing? -> calculate the answer
+             
+             TYPE .BINARYOPERATION:
+             1. if the last element in the array is a binaryOperation -> delete last element in an array and add the new one             */
             if let lastElementIndex = descriptionArray.index(descriptionArray.endIndex, offsetBy: -1, limitedBy: descriptionArray.startIndex) {
                 let lastElement = descriptionArray[lastElementIndex]
                 
