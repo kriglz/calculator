@@ -76,15 +76,15 @@ struct CalculatorBrain {
                 }
             }
         }
-        evaluateResult = performOperation(ifMemorySet: evaluateResult).result
-        let resultIsPendingResult = performOperation(ifMemorySet: evaluateResult).isPending
+        evaluateResult = performOperation(ifMemorySet: evaluateResult, with: descriptionArray).result
+        let resultIsPendingResult = performOperation(ifMemorySet: evaluateResult, with: descriptionArray).isPending
 
         return (result: evaluateResult, isPending: resultIsPendingResult) //, description: description)
     }
     
     
-    //performOperations for ViewCOntroller
-    func performOperation(ifMemorySet withValue: Double? = nil) -> (result: Double?, isPending: Bool) {
+    //performOperations using array elements
+    func performOperation(ifMemorySet withValue: Double? = nil, with array: [String]) -> (result: Double?, isPending: Bool) {
         
         var accumulation: Double?
         var resultIsPending = false
@@ -106,7 +106,7 @@ struct CalculatorBrain {
             }
         }
         
-        for element in descriptionArray {
+        for element in array {
             if Double(element) != nil {
                 accumulation = Double(element)!
                 
@@ -165,15 +165,14 @@ struct CalculatorBrain {
                 }
             }
         }
-
         return (accumulation, resultIsPending)
     }
     
+    //check if array of operations need to be modified and modify if needed
     enum Value {
         case numeric(Double)
         case nonNumeric(String)
     }
-    
     private mutating func compareOldElement(with newOne: Value) {
         switch newOne {
         case .numeric:
@@ -233,6 +232,7 @@ struct CalculatorBrain {
         }
     }
     
+    //get operation name based on button title
     private func getOperationName(of operation: String) -> String {
         if let op = operations[operation]{
             switch op {
@@ -265,6 +265,7 @@ struct CalculatorBrain {
         descriptionArray.removeAll()
     }
     
+    //description for description dislay
     var description: String {
         get {
             var displayArray = [String]()
@@ -272,17 +273,18 @@ struct CalculatorBrain {
             var repetetiveNumber = 1
             var beforeTheLastWasEqual = false
             var lastOperationName = ""
-            var lastElement = ""
             var newOperationName = ""
             
             
             for element in descriptionArray {
                 partialArray.append(element)
                 
-                if Double(element) != nil {                 //element is a number
+                //element is a number
+                if Double(element) != nil {
                     displayArray.append(element)
-                    
-                } else {                                    //element is not a number
+                 
+                //element is not a number
+                } else {
                     newOperationName = getOperationName(of: element)
                     switch element {
                     
@@ -308,7 +310,7 @@ struct CalculatorBrain {
                         }
                         
                     case "±":
-                        if evaluate().result! < 0 {
+                        if performOperation(with: partialArray).result! < 0 {
                             if lastOperationName == "equals" || lastOperationName == "unaryOperation" {
                                 displayArray.insert("-" + "(", at: descriptionArray.startIndex)
                                 displayArray.append(")")
@@ -318,11 +320,10 @@ struct CalculatorBrain {
                                 displayArray.append(")")
                             } else {
                                     displayArray.insert("-", at: displayArray.index(before: displayArray.endIndex))
-                            
                             }
                         } else {
-                            if evaluate().result! > 0 {
-                                if lastOperationName == "equals" {
+                            if performOperation(with: partialArray).result! > 0 {
+                                if lastOperationName == "equals" || lastOperationName == "unaryOperation" {
                                     displayArray.insert("-" + "(", at: descriptionArray.startIndex)
                                     displayArray.append(")")
                                 }
@@ -336,7 +337,7 @@ struct CalculatorBrain {
                     if newOperationName == "binaryOperation" || newOperationName == "constant" {
                         displayArray.append(element)
                     } else {
-                            if lastOperationName == "equals" || beforeTheLastWasEqual{
+                            if lastOperationName == "equals" || lastOperationName == "unaryOperation" || beforeTheLastWasEqual{
                                 displayArray.insert(element + "(", at: displayArray.startIndex)
                                 displayArray.append(")")
                                 beforeTheLastWasEqual = true
@@ -352,13 +353,7 @@ struct CalculatorBrain {
                         }
                     }
                     lastOperationName = newOperationName
-                    lastElement = element
-                    print( descriptionArray)
-
-                    print("desc", displayArray)
-
                 }
-                
             }
             
             var entireString = ""
@@ -370,5 +365,4 @@ struct CalculatorBrain {
             return entireString
         }
     }
-
 }
