@@ -194,19 +194,10 @@ struct CalculatorBrain {
                 let oldOperation = getOperationName(of: lastElement)
                 
                 
-                if newOperation == "constant" && (Double(lastElement) != nil || oldOperation == "constant" || oldOperation == "unaryOperation" || lastElement == "M") {
+                if newOperation == "constant" && (Double(lastElement) != nil || oldOperation == "constant" || oldOperation == "unaryOperation" || lastElement == "M" || oldOperation == "equals" ) {
                     descriptionArray.removeAll()
                 }
-                
-                if symbol == "±" && lastElement == "±" {
-                    descriptionArray.removeLast()
-                    canAppend = false
-                }
-        
-                if newOperation == "unaryOperation" && oldOperation == "binaryOperation" {
-                    descriptionArray.removeLast()
-                }
-                if newOperation == "binaryOperation" && oldOperation == "binaryOperation" {
+                if (newOperation == "unaryOperation" || newOperation == "binaryOperation") && oldOperation == "binaryOperation" {
                     descriptionArray.removeLast()
                 }
                 if newOperation == "equals" && oldOperation == "binaryOperation" {
@@ -214,14 +205,17 @@ struct CalculatorBrain {
                     let index = descriptionArray.endIndex
                     descriptionArray.insert(element, at: index)
                 }
-                if symbol == "M" && lastElement == "M" {
-                    descriptionArray.removeLast()
-                }
-                if newOperation == "equals" && oldOperation == "equals" {
-                    descriptionArray.removeLast()
-                }
                 if (oldOperation == "equals" || oldOperation == "unaryOperation" || oldOperation == "constant") && symbol == "M" {
                     descriptionArray.removeAll()
+                }
+                
+                
+                if (symbol == "M" && lastElement == "M") || (newOperation == "equals" && oldOperation == "equals") {
+                    descriptionArray.removeLast()
+                }
+                if symbol == "±" && lastElement == "±" {
+                    descriptionArray.removeLast()
+                    canAppend = false
                 }
             } else {
                 let newOperation = getOperationName(of: symbol)
